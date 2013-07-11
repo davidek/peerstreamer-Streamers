@@ -117,7 +117,7 @@ static void print_usage(int argc, char *argv[])
     "\t[-M peers]: neighbourhood target size.\n"
     "\t[-t config]: topology config.\n"
     "\t[-P port]: local UDP port to be used by the peer.\n"
-    "\t[-I iface]: local netwok interface to be used by the peer.\n"
+    "\t[-I iface]: local network interface to be used by the peer.\n"
     "\t         Useful if the host has several interfaces/addresses.\n"
     "\t[-N name]: set the name of the peer.\n"
     "\t         This name will be used when publishing in the repository.\n"
@@ -147,7 +147,7 @@ static void print_usage(int argc, char *argv[])
     "\t[-v]: print version.\n"
     "\n"
 #ifdef IO_GRAPES
-    "NOTE: by deafult the peer will dump the received video on STDOUT in raw format\n"
+    "NOTE: by default the peer will dump the received video on STDOUT in raw format\n"
     "      it can be played by your favourite player simply using a pipe\n"
     "      e.g., | cvlc /dev/stdin\n"
     "\n"
