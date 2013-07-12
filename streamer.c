@@ -90,6 +90,7 @@ extern bool topo_in;
 extern bool topo_keep_best;
 extern bool topo_add_best;
 extern bool autotune_period;
+extern enum L3PROTOCOL {IPv4, IPv6} l3;
 
 #ifndef MONL
 extern struct timeval print_tdiff;
@@ -119,6 +120,7 @@ static void print_usage(int argc, char *argv[])
     "\t[-P port]: local UDP port to be used by the peer.\n"
     "\t[-I iface]: local network interface to be used by the peer.\n"
     "\t         Useful if the host has several interfaces/addresses.\n"
+    "\t[-6]: use IPv6 addressing space.\n"
     "\t[-N name]: set the name of the peer.\n"
     "\t         This name will be used when publishing in the repository.\n"
     "\t[-n options]: pass configuration options to the net-helper\n"
@@ -224,7 +226,7 @@ static void cmdline_parse(int argc, char *argv[])
 	{0, 0, 0, 0}
   };
 
-    while ((o = getopt_long (argc, argv, "r:a:b:o:c:p:i:P:I:f:F:m:lC:N:n:M:t:s:e:S:v",long_options, &option_index)) != -1) { //use this function to manage long options
+    while ((o = getopt_long (argc, argv, "r:a:b:o:c:p:i:P:I:f:F:m:lC:N:n:M:t:s:e:S:6v",long_options, &option_index)) != -1) { //use this function to manage long options
     switch(o) {
       case 0: //for long options
         if( strcmp( "chunk_log", long_options[option_index].name ) == 0 ) { chunk_log = true; }
@@ -274,6 +276,9 @@ static void cmdline_parse(int argc, char *argv[])
       case 'I':
         my_iface = strdup(optarg);
         break;
+      case '6':
+    	l3 = IPv6;
+    	break;
       case 'f':
         fname = strdup(optarg);
         break;
