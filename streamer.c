@@ -361,6 +361,7 @@ static struct nodeID *init(void)
   int i;
   struct nodeID *myID;
   char *my_addr;
+  FILE* fp;
 
 #ifdef _WIN32
   {
@@ -402,7 +403,7 @@ static struct nodeID *init(void)
   // For communication with the GUI
   // chunker_player needs to know the network ID in order
   // to publish it in the repo
-  FILE* fp=fopen("NetworkID","w");
+  fp = fopen("NetworkID","w");
   if(fp)
   {
     fprintf(fp,"%s\n",node_addr_tr(myID));
