@@ -42,10 +42,9 @@ char *iface_addr(const char *iface)
 {
 #ifndef _WIN32
     struct ifaddrs *if_addr, *ifap;
-	int family, res;
-	char host_id[NI_MAXHOST], *host_addr;
+	int family;
+	char *host_addr;
 	int ifcount;
-	memset (host_id, 0, NI_MAXHOST);
 
 	if (getifaddrs(&if_addr) == -1)
 	{
@@ -64,35 +63,36 @@ char *iface_addr(const char *iface)
 		if (l3 == IPv4 && family == AF_INET && !strcmp (ifap->ifa_name, iface))
 		{
 			host_addr = malloc((size_t)INET_ADDRSTRLEN);
-
-			res = getnameinfo(ifap->ifa_addr, sizeof(struct sockaddr_in),
-					host_id, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
-			if (res != 0)
-			{ /* failure to get IPv6 address */
-
-			continue;
+			if (!host_addr)
+			{
+				perror("malloc host_addr");
+				return NULL;
 			}
-			host_addr = malloc((size_t)INET_ADDRSTRLEN);
-			strcpy(host_addr, strtok(host_id, "%"));
+			if (!inet_ntop(AF_INET, (void *)&(((struct sockaddr_in *)(ifap->ifa_addr))->sin_addr), host_addr, INET_ADDRSTRLEN))
+			{
+				perror("inet_ntop");
+				return NULL;
+			}
 			break;
 		}
 		if (l3 == IPv6 && family == AF_INET6 && !strcmp (ifap->ifa_name, iface))
 		{
 			host_addr = malloc((size_t)INET6_ADDRSTRLEN);
-
-			res = getnameinfo(ifap->ifa_addr, sizeof(struct sockaddr_in6),
-					host_id, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
-			if (res != 0)
-			{ /* failure to get IPv6 address */
-
-			continue;
+			if (!host_addr)
+			{
+				perror("malloc host_addr");
+				return NULL;
 			}
-			host_addr = malloc((size_t)INET6_ADDRSTRLEN);
-			strcpy(host_addr, strtok(host_id, "%"));
+			if (!inet_ntop(AF_INET6, (void *)&(((struct sockaddr_in6 *)(ifap->ifa_addr))->sin6_addr), host_addr, INET6_ADDRSTRLEN))
+			{
+				perror("inet_ntop");
+				return NULL;
+			}
 			break;
 		}
 
 	}
+	freeifaddrs(if_addr);
 	return host_addr;
 #else
     if(iface != NULL && strcmp(iface, "lo") == 0) return (l3==IPv4?"127.0.0.1":"::1");
@@ -130,12 +130,12 @@ char *simple_ip_addr()
 const char *autodetect_ip_address() {
 #ifdef __linux__
 
-	static char addr[128] = "";
+//	static char addr[128] = "";
 	char iface[IFNAMSIZ] = "";
 	char line[128] = "x";
-	struct ifaddrs *ifaddr, *ifa;
-	char *ret = NULL;
-	int res;
+//	struct ifaddrs *ifaddr, *ifa;
+//	char *host_addr;
+//	int res;
 
 	FILE *r = fopen("/proc/net/route", "r");
 	if (!r) return NULL;
@@ -151,46 +151,63 @@ const char *autodetect_ip_address() {
 		 	break;
 		}
 	}
-	if (iface[0] == 0) return NULL;
 
-	if (getifaddrs(&ifaddr) < 0) {
-		perror("getifaddrs");
-		return NULL;
-	}
-
-	ifa = ifaddr;
-	while (ifa) {
-		if (ifa->ifa_addr && ifa->ifa_addr->sa_family == AF_INET && 
-			ifa->ifa_name && !strcmp(ifa->ifa_name, iface))  {
-            if (l3 == IPv4 && ifa->ifa_addr->sa_family == AF_INET){
-                void *tmpAddrPtr=&((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
-                res = getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in), line, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
-                printf("dev: %-8s address: <%s> \n", ifa->ifa_name, line);
-                if (inet_ntop(AF_INET, tmpAddrPtr, addr, 127)) {
-                        ret = addr;
-                } else {
-                        perror("inet_ntop error");
-                        ret = NULL;
-                }
-                break;
-            }
-            if (l3 == IPv6 && ifa->ifa_addr->sa_family == AF_INET6){
-                void *tmpAddrPtr=&((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr;
-                if (inet_ntop(AF_INET6, tmpAddrPtr, addr, 127)) {
-                      ret = addr;
-                } else {
-                        perror("inet_ntop error");
-                        ret = NULL;
-                }
-                break;
-            }
-			break;
-		}
-	ifa=ifa->ifa_next;
-	}
-
-	freeifaddrs(ifaddr);
-	return ret;
+	return iface_addr(iface);
+//	if (iface[0] == 0) return NULL;
+//
+//	if (getifaddrs(&ifaddr) < 0) {
+//		perror("getifaddrs");
+//		return NULL;
+//	}
+//
+//	ifa = ifaddr;
+//	while (ifa) {
+//		if (ifa->ifa_addr && ifa->ifa_addr->sa_family == AF_INET &&
+//			ifa->ifa_name && !strcmp(ifa->ifa_name, iface))  {
+//            if (l3 == IPv4 && ifa->ifa_addr->sa_family == AF_INET)
+//            {
+//        			host_addr = malloc((size_t)INET_ADDRSTRLEN);
+//        			if (!host_addr)
+//        			{
+//        				perror("malloc host_addr");
+//        				return NULL;
+//        			}
+//        			if (!inet_ntop(ifa->ifa_addr->sa_family, (void *)&(((struct sockaddr_in *)(ifa->ifa_addr))->sin_addr), host_addr, INET_ADDRSTRLEN))
+//        			{
+//        				perror("inet_ntop");
+//        				return NULL;
+//        			}
+//        			break;
+//        		}
+//                void *tmpAddrPtr=&((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
+//
+//                res = getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in), line, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
+//                printf("dev: %-8s address: <%s> \n", ifa->ifa_name, line);
+//                if (inet_ntop(AF_INET, tmpAddrPtr, addr, 127)) {
+//                        ret = addr;
+//                } else {
+//                        perror("inet_ntop error");
+//                        ret = NULL;
+//                }
+//                break;
+//            }
+//            if (l3 == IPv6 && ifa->ifa_addr->sa_family == AF_INET6){
+//                void *tmpAddrPtr=&((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr;
+//                if (inet_ntop(AF_INET6, tmpAddrPtr, addr, 127)) {
+//                      ret = addr;
+//                } else {
+//                        perror("inet_ntop error");
+//                        ret = NULL;
+//                }
+//                break;
+//            }
+//			break;
+//		}
+//	ifa=ifa->ifa_next;
+//	}
+//
+//	freeifaddrs(ifaddr);
+//	return ret;
 #else
         return simple_ip_addr();
 #endif
