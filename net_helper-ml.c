@@ -250,7 +250,8 @@ static void init_myNodeID_cb (socketID_handle local_socketID,int errorstatus) {
 
 		if (stun_retry_cnt > stun_retries) {
 			fprintf(stderr,"Net-helper init : Retrying without STUN\n");
-			mlSetStunServer(0,NULL);
+//			mlSetStunServer(0,NULL);
+				unsetStunServer();
 		} else {
 			mlSetStunServer(stun_port, stun_server);
 		}
