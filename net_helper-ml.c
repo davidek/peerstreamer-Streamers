@@ -239,7 +239,7 @@ static void init_myNodeID_cb (socketID_handle local_socketID,int errorstatus) {
 		}
 		stun_server = strdup(stun_servers[stun_servers_cnt]);
 
-		if ((c = strchr(stun_server,':'))) {
+		if ((c = strchr(stun_server,'_'))) {
 			*c = 0;
 			stun_port = atoi(c+1);
 		} else {
@@ -465,7 +465,7 @@ struct nodeID *net_helper_init(const char *IPaddr, int port, const char *config)
 
 	stun_servers_cnt = 0;
 	stun_server = strdup(stun_servers[stun_servers_cnt]);
-	if ((c = strchr(stun_server,':'))) {
+	if ((c = strchr(stun_server,'_'))) {
 		*c = 0;
 		stun_port = atoi(c+1);
 	} else {
