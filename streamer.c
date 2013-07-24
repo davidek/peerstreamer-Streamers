@@ -468,6 +468,7 @@ int main(int argc, char *argv[])
     output_init(outbuff_size, output_config);
 
     srv = create_node(srv_ip, srv_port);
+	
     if (srv == NULL) {
       fprintf(stderr, "Cannot resolve remote address %s:%d\n", srv_ip, srv_port);
 

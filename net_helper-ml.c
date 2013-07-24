@@ -473,6 +473,7 @@ struct nodeID *net_helper_init(const char *IPaddr, int port, const char *config)
 	}
 
 	//fprintf(stderr, "STUN server: %s:%d\n", stun_server, stun_port);
+	if (address_family(IPaddr)==AF_INET6) stun_server = NULL;
 
 	s = mlInit(1, tout, port, IPaddr, stun_port, stun_server, &init_myNodeID_cb, base);
 	if (s < 0) {
@@ -687,7 +688,7 @@ socketID_handle getRemoteSocketID(const char *ip, int port) {
 	char str[SOCKETID_STRING_SIZE];
 	socketID_handle h;
 
-	snprintf(str, SOCKETID_STRING_SIZE, "%s:%d-%s:%d", ip, port, ip, port);
+	snprintf(str, SOCKETID_STRING_SIZE, "%s_%d-%s_%d", ip, port, ip, port);
 	h = malloc(SOCKETID_SIZE);
 	mlStringToSocketID(str, h);
 
