@@ -710,6 +710,7 @@ struct nodeID *create_node(const char *rem_IP, int rem_port) {
 }
 
 int node_ip(const struct nodeID *s, char *ip, int size) {
+//TODO update for ipv6 compatibility
 	int len;
 	const char *start, *end;
 	char tmp[256];
