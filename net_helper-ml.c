@@ -6,7 +6,9 @@
 
 #include <event2/event.h>
 #ifndef _WIN32
-#include <arpa/inet.h>
+	#include <arpa/inet.h>
+#else
+	#include <ws2tcpip.h>
 #endif
 #include <unistd.h>
 #include <stdlib.h>
@@ -43,7 +45,7 @@ struct event_base *base;
 
 #define FDSSIZE 16
 
-#define STUN_SERVER_DEFAULT "77.72.174.163+stun.softjoys.com+stun.ekiga.org"
+#define STUN_SERVER_DEFAULT "77.72.174.163+stun.softjoys.com+stun.ekiga.net"
 #define STUN_PORT_DEFAULT 3478
 #define STUN_SERVERS_MAX 32
 static char *stun_servers[STUN_SERVERS_MAX];
