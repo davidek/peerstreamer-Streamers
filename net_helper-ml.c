@@ -241,7 +241,7 @@ static void init_myNodeID_cb (socketID_handle local_socketID,int errorstatus) {
 		}
 		stun_server = strdup(stun_servers[stun_servers_cnt]);
 
-		if ((c = strchr(stun_server,'_'))) {
+		if ((c = strchr(stun_server,':'))) {
 			*c = 0;
 			stun_port = atoi(c+1);
 		} else {
@@ -467,7 +467,7 @@ struct nodeID *net_helper_init(const char *IPaddr, int port, const char *config)
 
 	stun_servers_cnt = 0;
 	stun_server = strdup(stun_servers[stun_servers_cnt]);
-	if ((c = strchr(stun_server,'_'))) {
+	if ((c = strchr(stun_server,':'))) {
 		*c = 0;
 		stun_port = atoi(c+1);
 	} else {
@@ -689,8 +689,9 @@ int wait4data(const struct nodeID *n, struct timeval *tout, int *fds) {
 socketID_handle getRemoteSocketID(const char *ip, int port) {
 	char str[SOCKETID_STRING_SIZE];
 	socketID_handle h;
+	char port_delim = (address_family(ip)==AF_INET) ? ':' : '_';
 
-	snprintf(str, SOCKETID_STRING_SIZE, "%s_%d-%s_%d", ip, port, ip, port);
+	snprintf(str, SOCKETID_STRING_SIZE, "%s%c%d-%s%c%d", ip,port_delim, port, ip, port_delim, port);
 	h = malloc(SOCKETID_SIZE);
 	mlStringToSocketID(str, h);
 
