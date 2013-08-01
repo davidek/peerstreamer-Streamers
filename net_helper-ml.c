@@ -6,7 +6,9 @@
 
 #include <event2/event.h>
 #ifndef _WIN32
-#include <arpa/inet.h>
+	#include <arpa/inet.h>
+#else
+	#include <ws2tcpip.h>
 #endif
 #include <unistd.h>
 #include <stdlib.h>
@@ -43,7 +45,7 @@ struct event_base *base;
 
 #define FDSSIZE 16
 
-#define STUN_SERVER_DEFAULT "77.72.174.163+stun.softjoys.com+stun.ekiga.org"
+#define STUN_SERVER_DEFAULT "77.72.174.163+stun.softjoys.com+stun.ekiga.net"
 #define STUN_PORT_DEFAULT 3478
 #define STUN_SERVERS_MAX 32
 static char *stun_servers[STUN_SERVERS_MAX];
@@ -250,7 +252,8 @@ static void init_myNodeID_cb (socketID_handle local_socketID,int errorstatus) {
 
 		if (stun_retry_cnt > stun_retries) {
 			fprintf(stderr,"Net-helper init : Retrying without STUN\n");
-			mlSetStunServer(0,NULL);
+//			mlSetStunServer(0,NULL);
+				unsetStunServer();
 		} else {
 			mlSetStunServer(stun_port, stun_server);
 		}
@@ -472,6 +475,7 @@ struct nodeID *net_helper_init(const char *IPaddr, int port, const char *config)
 	}
 
 	//fprintf(stderr, "STUN server: %s:%d\n", stun_server, stun_port);
+	if (address_family(IPaddr)==AF_INET6) stun_server = NULL;
 
 	s = mlInit(1, tout, port, IPaddr, stun_port, stun_server, &init_myNodeID_cb, base);
 	if (s < 0) {
@@ -685,8 +689,9 @@ int wait4data(const struct nodeID *n, struct timeval *tout, int *fds) {
 socketID_handle getRemoteSocketID(const char *ip, int port) {
 	char str[SOCKETID_STRING_SIZE];
 	socketID_handle h;
+	char port_delim = (address_family(ip)==AF_INET) ? ':' : '_';
 
-	snprintf(str, SOCKETID_STRING_SIZE, "%s:%d-%s:%d", ip, port, ip, port);
+	snprintf(str, SOCKETID_STRING_SIZE, "%s%c%d-%s%c%d", ip,port_delim, port, ip, port_delim, port);
 	h = malloc(SOCKETID_SIZE);
 	mlStringToSocketID(str, h);
 
@@ -705,6 +710,7 @@ struct nodeID *create_node(const char *rem_IP, int rem_port) {
 }
 
 int node_ip(const struct nodeID *s, char *ip, int size) {
+//TODO update for ipv6 compatibility
 	int len;
 	const char *start, *end;
 	char tmp[256];
