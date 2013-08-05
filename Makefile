@@ -132,8 +132,10 @@ OBJS += input-grapes.o
 ifdef FFMPEG_DIR
 CPPFLAGS += -I$(FFMPEG_DIR)
 LDFLAGS += -L$(FFMPEG_DIR)/libavcodec -L$(FFMPEG_DIR)/libavformat -L$(FFMPEG_DIR)/libavutil -L$(FFMPEG_DIR)/libavcore -L$(FFMPEG_DIR)/lib
+ifeq (,$(findstring mingw32,$(HOSTARCH)))
 CFLAGS += -pthread
 LDFLAGS += -pthread
+endif
 LDLIBS += -lavformat -lavcodec -lavutil
 LDLIBS += $(call ld-option, -lavcore)
 LDLIBS += -lm
