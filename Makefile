@@ -227,6 +227,7 @@ clean:
 	rm -f $(GRAPES)/src/net_helper.o
 	rm -f *.o
 	rm -f Chunkiser/*.o
+	rm -f transition/*.[od]
 	rm -f version.h
 	rm -f *.d
 
