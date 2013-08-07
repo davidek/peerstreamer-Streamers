@@ -96,7 +96,25 @@ char *iface_addr(const char *iface)
 	freeifaddrs(if_addr);
 	return host_addr;
 #else
-    if(iface != NULL && strcmp(iface, "lo") == 0) return (l3==IPv4?"127.0.0.1":"::1");
+    char *res;
+    if(iface != NULL && strcmp(iface, "lo") == 0)
+    {
+	  switch (l3)
+	  {
+		case IPv4:
+			res = malloc (INET_ADDRSTRLEN);
+			strcpy(res, "127.0.0.1");
+		  break;
+		case IPv6:
+			res = malloc (INET6_ADDRSTRLEN);
+			strcpy(res, "::1");
+		  break;
+		default:
+		  return NULL;
+		  break;
+	  }
+      return res;
+    }
     if(iface != NULL && inet_addr(iface) != INADDR_NONE) return strdup(iface);
     return default_ip_addr();
 #endif
