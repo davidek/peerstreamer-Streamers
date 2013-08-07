@@ -18,6 +18,7 @@
  * along with PeerStreamer.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+
 #include <sys/types.h>
 #ifndef _WIN32
 #include <ifaddrs.h>
@@ -28,7 +29,9 @@
 #include <net/if.h>     /* For struct ifreq */
 #include <netdb.h>
 #else
-#include <winsock2.h>
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0501 /* WINNT>=0x501 (WindowsXP) for supporting getaddrinfo/freeaddrinfo.*/
+#endif
 #include <ws2tcpip.h>
 #endif
 #include <unistd.h>
@@ -145,6 +148,99 @@ char *simple_ip_addr()
   return ip;
 }
 
+const char *hostname_ip_addr()
+{
+#ifndef _WIN32
+  const char *ip;
+  char hostname[256];
+  struct addrinfo * result;
+  struct addrinfo * res;
+  int error;
+
+  if (gethostname(hostname, sizeof hostname) < 0) {
+    fprintf(stderr, "can't get hostname\n");
+    return NULL;
+  }
+  fprintf(stderr, "hostname is: %s ...", hostname);
+
+  /* resolve the domain name into a list of addresses */
+  error = getaddrinfo(hostname, NULL, NULL, &result);
+  if (error != 0) {
+    fprintf(stderr, "can't resolve IP: %s\n", gai_strerror(error));
+    return NULL;
+  }
+
+  /* loop over all returned results and do inverse lookup */
+  for (res = result; res != NULL; res = res->ai_next) {
+    ip = inet_ntoa(((struct sockaddr_in*)res->ai_addr)->sin_addr);
+    fprintf(stderr, "IP is: %s ...", ip);
+    if ( strncmp("127.", ip, 4) == 0) {
+      fprintf(stderr, ":( ...");
+      ip = NULL;
+    } else {
+      break;
+    }
+  }
+  freeaddrinfo(result);
+
+  return ip;
+#else
+  const char *ip;
+  char hostname[256];
+  struct addrinfo hints, *result, *res;
+  int error;
+  ip = malloc (INET6_ADDRSTRLEN);
+  if (!ip)
+  {
+	  perror("hostname_ip_addr");
+	  return NULL;
+  }
+  fprintf(stderr, "Trying to guess IP ...");
+  if (gethostname(hostname, sizeof hostname) < 0) {
+    fprintf(stderr, "can't get hostname\n");
+    return NULL;
+  }
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_flags = AI_CANONNAME;
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_protocol = IPPROTO_TCP;
+
+  fprintf(stderr, "hostname is: %s ...\n", hostname);
+  error = getaddrinfo(hostname, NULL, NULL, &result);
+  if (error != 0)
+  {
+    fprintf(stderr, "can't resolve IP: %s\n", gai_strerror(error));
+    return NULL;
+  }
+
+  for (res = result; res != NULL ; res = res->ai_next)
+  {
+      fprintf(stderr, "Address Family is %d...", res->ai_family);
+	  if ( (res->ai_family == AF_INET && l3 == IPv4) ||
+			  (res->ai_family == AF_INET6 && l3 == IPv6))
+	  {
+		  if (res->ai_family == AF_INET)
+		  {
+			  inet_ntop(res->ai_family, &((const struct sockaddr_in *)(res->ai_addr))->sin_addr, ip, INET6_ADDRSTRLEN);
+		  }
+		  else
+		  {
+			  inet_ntop(res->ai_family, &((const struct sockaddr_in6 *)(res->ai_addr))->sin6_addr, ip, INET6_ADDRSTRLEN);
+		  }
+		  fprintf(stderr, "IP is: %s ...", ip);
+		  if ( (l3 == AF_INET && strncmp("127.", ip, 4) == 0) ||
+				  (l3 == AF_INET6 && strncmp("::1", ip, 3) == 0)) {
+			  fprintf(stderr, ":( ...");
+			  memset (&ip, 0, INET6_ADDRSTRLEN);
+		  }
+		  else break;
+	  }
+  }
+  freeaddrinfo(result);
+
+  return ip;
+#endif
+}
 
 const char *autodetect_ip_address() {
 #ifdef __linux__
@@ -228,49 +324,8 @@ const char *autodetect_ip_address() {
 //	freeifaddrs(ifaddr);
 //	return ret;
 #else
-        return simple_ip_addr();
-#endif
-}
-
-
-const char *hostname_ip_addr()
-{
-#ifndef _WIN32
-  const char *ip;
-  char hostname[256];
-  struct addrinfo * result;
-  struct addrinfo * res;
-  int error;
-
-  if (gethostname(hostname, sizeof hostname) < 0) {
-    fprintf(stderr, "can't get hostname\n");
-    return NULL;
-  }
-  fprintf(stderr, "hostname is: %s ...", hostname);
-
-  /* resolve the domain name into a list of addresses */
-  error = getaddrinfo(hostname, NULL, NULL, &result);
-  if (error != 0) {
-    fprintf(stderr, "can't resolve IP: %s\n", gai_strerror(error));
-    return NULL;
-  }
-
-  /* loop over all returned results and do inverse lookup */
-  for (res = result; res != NULL; res = res->ai_next) {
-    ip = inet_ntoa(((struct sockaddr_in*)res->ai_addr)->sin_addr);
-    fprintf(stderr, "IP is: %s ...", ip);
-    if ( strncmp("127.", ip, 4) == 0) {
-      fprintf(stderr, ":( ...");
-      ip = NULL;
-    } else {
-      break;
-    }
-  }
-  freeaddrinfo(result);
-
-  return ip;
-#else
-  return NULL;
+		return hostname_ip_addr();
+//        return simple_ip_addr();
 #endif
 }
 
