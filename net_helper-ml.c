@@ -548,7 +548,7 @@ void send_to_peer_cb(int fd, short event, void *arg)
 int send_to_peer(const struct nodeID *from, struct nodeID *to, const uint8_t *buffer_ptr, int buffer_size)
 {
 	msgData_cb *p;
-	int current;
+	int current, index;
 	send_params params = {0,0,0,0};
 
 	if (buffer_size <= 0) {
@@ -557,7 +557,7 @@ int send_to_peer(const struct nodeID *from, struct nodeID *to, const uint8_t *bu
 	}
 
 	// if buffer is full, discard the message and return an error flag
-	int index = next_S();
+	index = next_S();
 	if (index<0) {
 		// free(buffer_ptr);
 		fprintf(stderr,"Net-helper: send buffer full\n ");
@@ -787,7 +787,7 @@ struct nodeID *nodeid_undump(const uint8_t *b, int *len)
 {
   uint8_t sid[SOCKETID_SIZE];
   socketID_handle h = (socketID_handle) sid;
-  mlStringToSocketID((char *)b,h);
-  *len = strlen((char*)b) + 1;
+  mlStringToSocketID((const char *)b,h);
+  *len = strlen((const char*)b) + 1;
   return id_lookup_dup(h);
 }
