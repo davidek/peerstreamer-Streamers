@@ -39,4 +39,6 @@ void send_offer();
 void send_accepted_chunks(struct nodeID *to, struct chunkID_set *cset_acc, int max_deliver, uint16_t trans_id);
 void send_bmap(struct nodeID *to);
 
+void log_chunk(struct nodeID *from,struct nodeID *to,struct chunk *c,char *note);
+
 #endif	/* STREAMING_H */
