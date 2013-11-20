@@ -9,7 +9,7 @@
  * the use of this file is temporary, 
  *
 */
-
+#define NODE_STR_LENGTH 120
 const char * node_addr_tr(const struct nodeID *s);
 
 #endif //NODE_ADDR_H

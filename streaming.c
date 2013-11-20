@@ -550,7 +550,7 @@ void send_accepted_chunks(struct nodeID *toid, struct chunkID_set *cset_acc, int
         if(to) chunkID_set_add_chunk(to->bmap, c->id); //don't send twice ... assuming that it will actually arrive
         d++;
         reg_chunk_send(c->id);
-      	if(chunk_log) log_chunk(get_my_addr(),toid,c,"SENT");
+      	if(chunk_log) log_chunk(get_my_addr(),toid,c,"SENT_ACCEPTED");
         //{fprintf(stderr, "TEO: Sending chunk %d to peer: %s at: %"PRIu64" Result: %d Size: %d bytes\n", c->id, node_addr_tr(toid), gettimeofday_in_us(), res, c->size);}
       } else {
         fprintf(stderr,"ERROR sending chunk %d\n",c->id);
@@ -671,7 +671,11 @@ void send_offer()
 void log_chunk(struct nodeID *from,struct nodeID *to,struct chunk *c,char * note)
 {
 	// semantic: [CHUNK_LOG],log_date,sender,receiver,id,size(bytes),chunk_timestamp,hopcount,notes
-	fprintf(stderr,"[CHUNK_LOG],%"PRIu64",%s,%s,%d,%d,%"PRIu64",%i,%s\n",gettimeofday_in_us(),node_addr_tr(from),node_addr_tr(to),c->id,c->size,c->timestamp,chunk_get_hopcount(c),note);
+	char sndr[NODE_STR_LENGTH],rcvr[NODE_STR_LENGTH];
+	node_addr(from,sndr,NODE_STR_LENGTH);
+	node_addr(to,rcvr,NODE_STR_LENGTH);
+
+	fprintf(stderr,"[CHUNK_LOG],%"PRIu64",%s,%s,%d,%d,%"PRIu64",%i,%s\n",gettimeofday_in_us(),sndr,rcvr,c->id,c->size,c->timestamp,chunk_get_hopcount(c),note);
 }
 
 void send_chunk()
