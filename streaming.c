@@ -332,6 +332,12 @@ void received_chunk(struct nodeID *from, const uint8_t *buff, int len)
 
   res = parseChunkMsg(buff + 1, len - 1, &c, &transid);
   if (res > 0) {
+		if (c.id % 100 == 0) {
+			printf(stderr,"[NOISE] Chunk %d discarded >:)",c.id);
+			free(c.data);
+			free(c.attributes);
+			return;
+		}
     chunk_attributes_update_received(&c);
     chunk_unlock(c.id);
     dprintf("Received chunk %d from peer: %s\n", c.id, node_addr_tr(from));
