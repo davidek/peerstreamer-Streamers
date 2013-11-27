@@ -72,6 +72,7 @@ struct chunk_attributes {
 } __attribute__((packed));
 
 extern bool chunk_log;
+extern unsigned int chunk_loss_interval;
 
 struct chunk_buffer *cb;
 static struct input_desc *input;
@@ -332,8 +333,8 @@ void received_chunk(struct nodeID *from, const uint8_t *buff, int len)
 
   res = parseChunkMsg(buff + 1, len - 1, &c, &transid);
   if (res > 0) {
-		if (c.id % 100 == 0) {
-			printf(stderr,"[NOISE] Chunk %d discarded >:)",c.id);
+		if (chunk_loss_interval && c.id % chunk_loss_interval == 0) {
+			fprintf(stderr,"[NOISE] Chunk %d discarded >:)\n",c.id);
 			free(c.data);
 			free(c.attributes);
 			return;

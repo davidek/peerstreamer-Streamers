@@ -74,6 +74,7 @@ static const char *net_helper_config = "";
 static const char *topo_config = "";
 unsigned char msgTypes[] = {MSG_TYPE_CHUNK,MSG_TYPE_SIGNALLING};
 bool chunk_log = false;
+unsigned int chunk_loss_interval = 0;
 static int randomize_start = 0;
 int start_id = -1;
 int end_id = -1;
@@ -125,6 +126,7 @@ static void print_usage(int argc, char *argv[])
     "\t         This name will be used when publishing in the repository.\n"
     "\t[-n options]: pass configuration options to the net-helper\n"
     "\t[--chunk_log]: print a chunk level log on stderr\n"
+    "\t[--chunk_loss_interval <interval>]: discard a chunk every <interval> number of chunks.\n"
     "\t[-F config]: configure the output module\n"
     "\t[-a alpha]: set the topology alpha value (from 0 to 100)\n"
     "\t[-r rtt]: set the RTT threshold (in ms) for desired neighbours\n"
@@ -210,6 +212,7 @@ static void cmdline_parse(int argc, char *argv[])
   int option_index = 0;
   static struct option long_options[] = {
         {"chunk_log", no_argument, 0, 0},
+        {"chunk_loss_interval", required_argument, 0, 0},
         {"measure_start", required_argument, 0, 0},
         {"measure_every", required_argument, 0, 0},
         {"playout_limit", required_argument, 0, 0},
@@ -230,6 +233,7 @@ static void cmdline_parse(int argc, char *argv[])
     switch(o) {
       case 0: //for long options
         if( strcmp( "chunk_log", long_options[option_index].name ) == 0 ) { chunk_log = true; }
+        if( strcmp( "chunk_loss_interval", long_options[option_index].name ) == 0 ) { chunk_loss_interval = atoi(optarg); }
 #ifndef MONL
         if( strcmp( "measure_start", long_options[option_index].name ) == 0 ) { tstartdiff.tv_sec = atoi(optarg); }
         if( strcmp( "measure_every", long_options[option_index].name ) == 0 ) { print_tdiff.tv_sec = atoi(optarg); }
